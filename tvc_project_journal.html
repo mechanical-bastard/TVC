@@ -1,0 +1,787 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TVC Engineering Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ink:#0d0d0b;
+  --paper:#f5f0e8;
+  --paper2:#ede8dc;
+  --paper3:#e4ddd0;
+  --accent:#b85c2e;
+  --accent2:#2e6b4f;
+  --gold:#c9a84c;
+  --muted:#524c42;
+  --border:rgba(13,13,11,0.18);
+  --radius:2px;
+  --shadow:0 1px 3px rgba(13,13,11,0.08),0 4px 16px rgba(13,13,11,0.04);
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Cormorant Garamond',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── grain overlay ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.5;
+}
+
+/* ── nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 40px;
+  background:rgba(245,240,232,0.88);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'Syne',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);
+}
+.nav-tabs{display:flex;gap:6px;}
+.nav-tab{
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 14px;border-radius:1px;
+  border:1px solid transparent;
+  background:none;cursor:pointer;color:var(--muted);
+  transition:all .25s ease;
+}
+.nav-tab:hover{color:var(--ink);border-color:var(--border);}
+.nav-tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* ── pages ── */
+.page{display:none;padding-top:80px;min-height:100vh;opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;}
+.page.active{display:block;opacity:1;transform:translateY(0);}
+
+/* ── hero ── */
+.hero{
+  padding:80px 40px 60px;
+  max-width:900px;margin:0 auto;
+  border-bottom:1px solid var(--border);
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.hero-eyebrow::after{content:'';flex:1;height:1px;background:var(--border);}
+.hero h1{
+  font-size:clamp(44px,7vw,88px);font-weight:300;line-height:1.0;
+  letter-spacing:-.02em;color:var(--ink);margin-bottom:12px;
+}
+.hero h1 em{font-style:italic;color:var(--accent);}
+.hero-sub{font-size:18px;color:var(--muted);font-weight:300;margin-top:20px;max-width:520px;line-height:1.6;}
+.hero-meta{
+  margin-top:40px;display:flex;gap:40px;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);
+}
+.hero-meta span b{display:block;font-size:22px;font-weight:400;color:var(--ink);font-family:'Cormorant Garamond',serif;margin-bottom:2px;}
+
+/* ── progress bar ── */
+.progress-strip{
+  padding:24px 40px;
+  background:var(--paper2);
+  border-bottom:1px solid var(--border);
+}
+.progress-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:20px;}
+.progress-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.progress-track{flex:1;height:2px;background:var(--border);}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .8s cubic-bezier(.16,1,.3,1);}
+.progress-pct{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--ink);min-width:36px;text-align:right;}
+
+/* ── checklist ── */
+.checklist-wrap{max-width:900px;margin:0 auto;padding:0 40px 80px;}
+.week-block{margin-top:48px;}
+.week-label{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);
+  padding-bottom:12px;border-bottom:1px solid var(--border);
+  margin-bottom:0;
+}
+.task-item{
+  display:grid;grid-template-columns:44px 1fr auto;
+  align-items:start;
+  padding:16px 0;
+  border-bottom:1px solid var(--border);
+  gap:0;
+  transition:background .2s;
+}
+.task-item:hover{background:rgba(13,13,11,0.02);}
+.task-check{
+  display:flex;align-items:flex-start;padding-top:2px;
+}
+.task-check input{display:none;}
+.task-check label{
+  width:18px;height:18px;border:1px solid var(--border);
+  border-radius:var(--radius);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;flex-shrink:0;
+}
+.task-check input:checked + label{background:var(--accent);border-color:var(--accent);}
+.task-check label::after{
+  content:'';width:5px;height:9px;
+  border:1.5px solid var(--paper);border-top:none;border-left:none;
+  transform:rotate(45deg) scale(0) translateY(-1px);
+  transition:transform .15s ease;
+}
+.task-check input:checked + label::after{transform:rotate(45deg) scale(1) translateY(-1px);}
+.task-body{padding:0 16px;}
+.task-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;text-transform:uppercase;}
+.task-title{font-size:16px;font-weight:400;color:var(--ink);line-height:1.4;transition:color .2s;}
+.task-item.done .task-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--border);}
+.task-note{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic;}
+.task-motivation{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;
+  color:var(--accent);padding-top:2px;text-align:right;max-width:180px;line-height:1.4;
+}
+.task-item.done .task-motivation{color:var(--accent2);}
+.break-row{
+  padding:12px 0 12px 44px;
+  border-bottom:1px dashed var(--border);
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* ── photos section ── */
+.photos-wrap{max-width:960px;margin:0 auto;padding:48px 40px 80px;}
+.section-header{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:32px;
+}
+.section-title{font-size:28px;font-weight:300;color:var(--ink);}
+.section-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;}
+
+.photo-upload-zone{
+  border:1px dashed var(--border);
+  border-radius:var(--radius);
+  padding:48px;text-align:center;
+  cursor:pointer;transition:all .25s ease;
+  margin-bottom:32px;
+  background:var(--paper2);
+}
+.photo-upload-zone:hover{border-color:var(--accent);background:rgba(184,92,46,0.03);}
+.upload-icon{font-size:28px;margin-bottom:12px;opacity:.4;}
+.upload-text{font-size:16px;color:var(--muted);font-style:italic;}
+.upload-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.08em;}
+#photo-input{display:none;}
+
+.photo-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:2px;
+}
+.photo-card{
+  position:relative;overflow:hidden;
+  background:var(--paper3);
+  aspect-ratio:4/3;
+  cursor:pointer;
+}
+.photo-card img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .5s cubic-bezier(.16,1,.3,1),filter .3s;
+  filter:sepia(.1) contrast(1.02);
+}
+.photo-card:hover img{transform:scale(1.04);filter:sepia(0) contrast(1);}
+.photo-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(13,13,11,.8) 0%, transparent 50%);
+  opacity:0;transition:opacity .3s ease;
+  display:flex;flex-direction:column;justify-content:flex-end;padding:16px;
+}
+.photo-card:hover .photo-overlay{opacity:1;}
+.photo-caption{font-size:13px;color:rgba(245,240,232,.9);font-style:italic;line-height:1.4;}
+.photo-meta{font-family:'DM Mono',monospace;font-size:9px;color:rgba(245,240,232,.5);margin-top:4px;letter-spacing:.08em;}
+.photo-type{
+  position:absolute;top:10px;right:10px;
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;
+  text-transform:uppercase;padding:3px 8px;border-radius:1px;
+}
+.photo-type.success{background:var(--accent2);color:var(--paper);}
+.photo-type.failure{background:var(--accent);color:var(--paper);}
+.photo-type.progress{background:rgba(13,13,11,.6);color:rgba(245,240,232,.8);}
+.photo-delete{
+  position:absolute;top:10px;left:10px;
+  width:24px;height:24px;background:rgba(184,92,46,.8);
+  border:none;border-radius:1px;cursor:pointer;
+  color:var(--paper);font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+  z-index:10;
+}
+.photo-delete:hover{background:rgba(13,13,11,.9);}
+
+/* modal for add photo */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(13,13,11,.6);
+  z-index:200;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--paper);border:1px solid var(--border);
+  max-width:440px;width:90%;padding:40px;
+  animation:slideUp .3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal h3{font-size:22px;font-weight:300;margin-bottom:24px;color:var(--ink);}
+.modal-img-preview{width:100%;height:180px;object-fit:cover;margin-bottom:20px;display:none;border:1px solid var(--border);}
+.form-group{margin-bottom:16px;}
+.form-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:10px 12px;
+  background:var(--paper2);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:'Cormorant Garamond',serif;
+  font-size:15px;color:var(--ink);outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-select{cursor:pointer;}
+.modal-actions{display:flex;gap:10px;margin-top:24px;}
+.btn{
+  padding:10px 20px;border:1px solid var(--border);
+  border-radius:var(--radius);font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;
+}
+.btn-primary{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);}
+.btn-ghost{background:transparent;color:var(--muted);}
+.btn-ghost:hover{color:var(--ink);border-color:var(--ink);}
+
+/* ── verdict page ── */
+.verdict-wrap{
+  max-width:700px;margin:0 auto;
+  padding:60px 40px 80px;
+  text-align:center;
+}
+.verdict-date{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:48px;
+}
+.verdict-selector{
+  display:flex;gap:1px;margin-bottom:48px;justify-content:center;
+}
+.verdict-btn{
+  flex:1;max-width:200px;padding:14px 20px;
+  border:1px solid var(--border);background:var(--paper2);
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;cursor:pointer;transition:all .25s;color:var(--muted);
+}
+.verdict-btn:hover{border-color:var(--ink);color:var(--ink);}
+.verdict-btn.active-s{background:var(--accent2);border-color:var(--accent2);color:var(--paper);}
+.verdict-btn.active-f{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+
+.verdict-display{
+  padding:60px 40px;border:1px solid var(--border);
+  background:var(--paper2);margin-bottom:40px;
+  min-height:200px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+}
+.verdict-phrase{
+  font-size:clamp(28px,5vw,48px);font-weight:300;line-height:1.2;
+  color:var(--ink);letter-spacing:-.01em;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
+}
+.verdict-phrase.shown{opacity:1;transform:translateY(0);}
+.verdict-phrase em{font-style:italic;color:var(--accent);}
+.verdict-phrase.success-phrase em{color:var(--accent2);}
+.verdict-sub{
+  margin-top:16px;font-size:15px;color:var(--muted);font-style:italic;
+  opacity:0;transition:opacity .6s ease .3s;
+}
+.verdict-sub.shown{opacity:1;}
+
+.verdict-note-area{
+  text-align:left;margin-top:40px;
+  border-top:1px solid var(--border);padding-top:32px;
+}
+.verdict-note-label{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+}
+.verdict-textarea{
+  width:100%;min-height:120px;padding:16px;
+  background:transparent;border:none;border-bottom:1px solid var(--border);
+  font-family:'Cormorant Garamond',serif;font-size:17px;
+  color:var(--ink);resize:none;outline:none;line-height:1.7;
+}
+.verdict-textarea::placeholder{color:var(--muted);font-style:italic;}
+.verdict-save-btn{
+  margin-top:16px;padding:8px 20px;
+  background:none;border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.15em;text-transform:uppercase;
+  cursor:pointer;color:var(--muted);transition:all .2s;
+}
+.verdict-save-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* ── toast ── */
+.toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);
+  padding:10px 24px;border-radius:1px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;
+  opacity:0;transition:all .3s ease;z-index:300;pointer-events:none;
+  text-transform:uppercase;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── empty state ── */
+.empty-photos{
+  text-align:center;padding:80px 40px;color:var(--muted);
+}
+.empty-photos p{font-style:italic;font-size:18px;}
+.empty-photos span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;display:block;margin-top:8px;text-transform:uppercase;}
+
+/* lightbox */
+.lightbox{
+  position:fixed;inset:0;background:rgba(13,13,11,.92);
+  z-index:500;display:none;align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:90vw;max-height:85vh;object-fit:contain;border:1px solid rgba(245,240,232,.1);}
+.lightbox-info{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  text-align:center;color:rgba(245,240,232,.7);
+  font-style:italic;font-size:15px;pointer-events:none;
+}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">TVC · Engineering Journal</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('tracker')">Tracker</button>
+    <button class="nav-tab" onclick="goTo('photos')">Archive</button>
+    <button class="nav-tab" onclick="goTo('verdict')">Verdict</button>
+  </div>
+</nav>
+
+<!-- ══ PAGE: TRACKER ══ -->
+<div id="page-tracker" class="page active">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Project 001 — 2-Axis TVC Prototype</div>
+    <h1>The <em>Build</em><br>Journal</h1>
+    <p class="hero-sub">37 days. From cardboard and curiosity to a controlled system. Document everything — the wins matter, but the failures teach.</p>
+    <div class="hero-meta">
+      <div><b id="days-done">0</b>days completed</div>
+      <div><b id="tasks-done">0</b>tasks done</div>
+      <div><b id="tasks-left">21</b>remaining</div>
+    </div>
+  </div>
+
+  <div class="progress-strip">
+    <div class="progress-inner">
+      <span class="progress-label">Overall progress</span>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+      <span class="progress-pct" id="prog-pct">0%</span>
+    </div>
+  </div>
+
+  <div class="checklist-wrap" id="checklist-root"></div>
+</div>
+
+<!-- ══ PAGE: PHOTOS ══ -->
+<div id="page-photos" class="page">
+  <div class="photos-wrap">
+    <div class="section-header">
+      <h2 class="section-title">Progress Archive</h2>
+      <span class="section-count" id="photo-count">0 moments captured</span>
+    </div>
+
+    <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()">
+      <div class="upload-icon">⊕</div>
+      <p class="upload-text">Add a milestone photo</p>
+      <p class="upload-sub">Mark it as Success · Failure · Progress</p>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" onchange="openPhotoModal(event)">
+
+    <div class="photo-grid" id="photo-grid">
+      <div class="empty-photos" id="empty-photos" style="grid-column:1/-1">
+        <p>No moments captured yet.</p>
+        <span>Upload your first milestone photo above</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: VERDICT ══ -->
+<div id="page-verdict" class="page">
+  <div class="verdict-wrap">
+    <div class="verdict-date" id="verdict-date"></div>
+
+    <h2 style="font-size:32px;font-weight:300;margin-bottom:8px;">Project Verdict</h2>
+    <p style="color:var(--muted);font-style:italic;margin-bottom:40px;font-size:16px;">When the deadline passes, what happened?</p>
+
+    <div class="verdict-selector">
+      <button class="verdict-btn" id="btn-success" onclick="setVerdict('success')">✓ &nbsp;We did it</button>
+      <button class="verdict-btn" id="btn-failure" onclick="setVerdict('failure')">— &nbsp;Not yet</button>
+      <button class="verdict-btn" id="btn-undo" onclick="undoVerdict()" style="display:none; max-width:120px;">↺ &nbsp;Reset</button>
+    </div>
+
+    <div class="verdict-display" id="verdict-display">
+      <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;">Awaiting verdict</p>
+    </div>
+
+    <div class="verdict-note-area">
+      <div class="verdict-note-label">Your reflection</div>
+      <textarea class="verdict-textarea" id="verdict-notes" placeholder="What did you learn? What broke? What surprised you? Write it here — future you will want to know." onblur="saveVerdictNotes()"></textarea>
+      <button class="verdict-save-btn" onclick="saveVerdictNotes()">Save reflection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Photo modal -->
+<div class="modal-overlay" id="photo-modal">
+  <div class="modal">
+    <h3>Add to archive</h3>
+    <img id="modal-preview" class="modal-img-preview" src="" alt="">
+    <div class="form-group">
+      <label class="form-label">Caption</label>
+      <input type="text" id="modal-caption" class="form-input" placeholder="What happened here?">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select id="modal-type" class="form-select">
+        <option value="progress">Progress</option>
+        <option value="success">Success</option>
+        <option value="failure">Failure</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="savePhoto()">Save to archive</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-info" id="lightbox-caption"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+const TASKS = [
+  {id:1,date:'25 May',week:'Week 1',title:'CAD Basics – Learn Fusion 360 fundamentals',note:'Watch 2–3 tutorials, sketch basic gimbal frame',motivation:'Pehla kadam, pehli jeet ⚡'},
+  {id:2,date:'26 May',week:'Week 1',title:'Servo Control Code – Write PWM signal in Arduino',note:'Test servo sweep, understand angle-to-pulse mapping',motivation:'Code likhna shuru = engineering shuru 🔧'},
+  {id:3,date:'27 May',week:'Week 1',title:'PWM Deep Dive – Oscilloscope verification',note:'Measure duty cycle, validate servo response',motivation:'Tu frequency samajh raha hai 🎯'},
+  {id:4,date:'28 May',week:'Week 1',title:'Order Components – Servos, MPU6050, frame material',note:'Cross-check BOM, place order on ROBU/Amazon',motivation:'Parts order = future mein jeet 📦'},
+  {id:5,date:'29 May',week:'Week 1',title:'Integration Test – Combine CAD sketch + servo prototype',note:'Sanity check before break',motivation:'Small wins compound bhai 💡'},
+  {id:6,date:'30 May',week:'Week 1',title:'☕ Break Day',note:'Rest. Sleep. Eat well.',motivation:'',isBreak:true},
+  {id:7,date:'31 May',week:'Week 1',title:'🔁 Buffer Day',note:'Finish any Week 1 spillover',motivation:'',isBreak:true},
+  {id:8,date:'01 Jun',week:'Week 2',title:'Build Prototype Frame – Cardboard / PVC assembly',note:"Aim for rough form factor, don't over-engineer",motivation:'Jugaad se engineering shuru hoti hai 🔧'},
+  {id:9,date:'02 Jun',week:'Week 2',title:'Mount Servos – Secure on prototype frame',note:'Align axes, ensure gimbal lock is avoided',motivation:'Mount karo, fly karo ✈️'},
+  {id:10,date:'03 Jun',week:'Week 2',title:'Manual Control – Potentiometer driven servo control',note:'Validate physical range of motion on both axes',motivation:'Haath se control, dimag se design 🧠'},
+  {id:11,date:'04 Jun',week:'Week 2',title:'Motion Testing – Stress test for wobble and binding',note:'Record video for reference during Week 3 redesign',motivation:'Document karo, improve karo 📹'},
+  {id:12,date:'05 Jun',week:'Week 2',title:'Review & Iterate – Fix issues from motion testing',note:'Update CAD sketches for 3D print version',motivation:'Failure = free feedback 🎁'},
+  {id:13,date:'06 Jun',week:'Week 2',title:'☕ Break Day',note:'Rest. Reflect. Plan.',motivation:'',isBreak:true},
+  {id:14,date:'07 Jun',week:'Week 2',title:'🔁 Buffer Day',note:'Finish any Week 2 tasks or redo failed tests',motivation:'',isBreak:true},
+  {id:15,date:'08 Jun',week:'Week 3',title:'Full CAD Design – Complete parametric model in Fusion 360',note:'Include servo cutouts, bearing slots, cable routing',motivation:'Design karo like an engineer 📐'},
+  {id:16,date:'09 Jun',week:'Week 3',title:'Servo Mount Design – Motor housing and ring couplers',note:'Tolerances matter — add 0.2mm clearance for prints',motivation:'Precision is power 🎯'},
+  {id:17,date:'10 Jun',week:'Week 3',title:'Inner Ring Design – Pitch axis ring with camera plate',note:'Ensure balanced CG for stable platform',motivation:'Balance is everything ⚖️'},
+  {id:18,date:'11 Jun',week:'Week 3',title:'Outer Ring Design – Yaw axis housing',note:'Finalize assembly, run interference check in CAD',motivation:'Final form loading... 🔄'},
+  {id:19,date:'12 Jun',week:'Week 3',title:'Send for 3D Printing – Export STL, submit to print service',note:'Double check scale! PLA, 0.2mm layer height',motivation:'Showtime baby 🎬'},
+  {id:20,date:'13 Jun',week:'Week 3',title:'☕ Wait for Prints',note:'Let the printer do its job. Rest.',motivation:'',isBreak:true},
+  {id:21,date:'14 Jun',week:'Week 3',title:'☕ Wait for Prints',note:'More rest.',motivation:'',isBreak:true},
+  {id:22,date:'15 Jun',week:'Week 4',title:'Receive & Inspect Prints – Clean supports, check tolerances',note:'File down any tight fits or stringing',motivation:'Physical form aagaya! 🛠️'},
+  {id:23,date:'16 Jun',week:'Week 4',title:'🔁 Buffer Day',note:'CAD fixes or re-export if needed',motivation:'',isBreak:true},
+  {id:24,date:'17 Jun',week:'Week 4',title:'MPU6050 Integration – Wire I2C sensor, read raw data',note:'Use Wire.h library, check I2C address (0x68/0x69)',motivation:'Sensor online = system online 📡'},
+  {id:25,date:'18 Jun',week:'Week 4',title:'Read Pitch & Roll – Parse accelerometer and gyroscope',note:'Apply complementary filter for stable readings',motivation:'Ab data bolta hai 📊'},
+  {id:26,date:'19 Jun',week:'Week 4',title:'Implement PID – Code P-I-D controller',note:'Start with P only, add I and D incrementally',motivation:'Ab system intelligent ban raha hai 🧠'},
+  {id:27,date:'20 Jun',week:'Week 4',title:'☕ Break Day',note:'Rest and process the logic.',motivation:'',isBreak:true},
+  {id:28,date:'21 Jun',week:'Week 4',title:'🔁 Buffer Day',note:'Debug any sensor noise issues',motivation:'',isBreak:true},
+  {id:29,date:'22 Jun',week:'Week 5',title:'Tune PID (Part 1) – Proportional and Integral',note:'Ziegler-Nichols or manual tuning. Log values.',motivation:'Tune karo, dominate karo 🎚️'},
+  {id:30,date:'23 Jun',week:'Week 5',title:'Tune PID (Part 2) – Derivative and Smoothing',note:'Eliminate micro-jitters, finalize gains.',motivation:'Smooth like butter 🧈'},
+  {id:31,date:'24 Jun',week:'Week 5',title:'Final Assembly – Mount electronics on 3D printed frame',note:'Full system integration test',motivation:'Yeh wala moment yaad rahega 🌟'},
+  {id:32,date:'25 Jun',week:'Week 5',title:'System Stress Test – Record stabilization demo',note:'Push the system to extreme angles, verify recovery',motivation:'Testing ki aakhri pariksha 🧪'},
+  {id:33,date:'26 Jun',week:'Week 5',title:'Review & Refine – Code cleanup and final tweaks',note:'Organize code, add comments, clean wiring',motivation:'Pro level finish 💼'},
+  {id:34,date:'27 Jun',week:'Week 5',title:'☕ Break Day',note:'Celebrate the build.',motivation:'',isBreak:true},
+  {id:35,date:'28 Jun',week:'Week 5',title:'🔁 Buffer Day',note:'Last chance to fix anything.',motivation:'',isBreak:true},
+  {id:36,date:'29 Jun',week:'Week 6',title:'📝 Documentation Day – Write full project report',note:'Design → Code → Results → Learnings',motivation:'Legacy likh raha hai tu ✍️'},
+  {id:37,date:'30 Jun',week:'Week 6',title:'🔁 Final Buffer – Project Deadline',note:'Bugs, loose wires, missing docs — finish it all',motivation:'Kar liye laundeeee !! 🏆'},
+];
+
+// ── STORAGE ──
+function getChecked(){try{return JSON.parse(localStorage.getItem('tvc_checked')||'[]');}catch{return[];}}
+function setChecked(a){localStorage.setItem('tvc_checked',JSON.stringify(a));}
+function getPhotos(){try{return JSON.parse(localStorage.getItem('tvc_photos')||'[]');}catch{return[];}}
+function setPhotos(a){localStorage.setItem('tvc_photos',JSON.stringify(a));}
+function getVerdict(){return localStorage.getItem('tvc_verdict')||'';}
+function setVerdictStore(v){localStorage.setItem('tvc_verdict',v);}
+function getVerdictNotes(){return localStorage.getItem('tvc_verdict_notes')||'';}
+function setVerdictNotes(v){localStorage.setItem('tvc_verdict_notes',v);}
+
+// ── NAV ──
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  const tab = Array.from(document.querySelectorAll('.nav-tab')).find(t=>t.textContent.toLowerCase().includes(page==='tracker'?'track':page==='photos'?'archive':'verdict'));
+  el.style.display='block';
+  requestAnimationFrame(()=>{
+    el.classList.add('active');
+    if(tab) tab.classList.add('active');
+  });
+  if(page==='photos') renderPhotos();
+  if(page==='verdict') initVerdict();
+}
+
+// ── CHECKLIST ──
+function renderChecklist(){
+  const checked = getChecked();
+  const root = document.getElementById('checklist-root');
+  const weeks = [...new Set(TASKS.map(t=>t.week))];
+  let html = '';
+  weeks.forEach(w=>{
+    html += `<div class="week-block"><div class="week-label">${w}</div>`;
+    TASKS.filter(t=>t.week===w).forEach(t=>{
+      if(t.isBreak){
+        html += `<div class="break-row">${t.date} &nbsp;·&nbsp; ${t.title} &nbsp;·&nbsp; ${t.note}</div>`;
+        return;
+      }
+      const done = checked.includes(t.id);
+      html += `<div class="task-item ${done?'done':''}" id="task-${t.id}">
+        <div class="task-check">
+          <input type="checkbox" id="cb-${t.id}" ${done?'checked':''} onchange="toggleTask(${t.id})">
+          <label for="cb-${t.id}"></label>
+        </div>
+        <div class="task-body">
+          <div class="task-date">${t.date}</div>
+          <div class="task-title">${t.title}</div>
+          <div class="task-note">${t.note}</div>
+        </div>
+        <div class="task-motivation">${t.motivation}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  root.innerHTML = html;
+  updateStats();
+  setTimeout(()=>{ document.getElementById('prog-fill').style.width = calcPct()+'%'; },100);
+}
+
+function calcPct(){
+  const checked = getChecked();
+  const activeTasks = TASKS.filter(t=>!t.isBreak);
+  return Math.round(checked.length/activeTasks.length*100);
+}
+
+function toggleTask(id){
+  let checked = getChecked();
+  if(checked.includes(id)){
+    checked = checked.filter(x=>x!==id);
+    document.getElementById('task-'+id).classList.remove('done');
+  } else {
+    checked.push(id);
+    document.getElementById('task-'+id).classList.add('done');
+    toast('Marked complete ✓');
+  }
+  setChecked(checked);
+  updateStats();
+  document.getElementById('prog-fill').style.width = calcPct()+'%';
+  document.getElementById('prog-pct').textContent = calcPct()+'%';
+}
+
+function updateStats(){
+  const checked = getChecked();
+  const activeTasks = TASKS.filter(t=>!t.isBreak);
+  const done = checked.length;
+  const left = activeTasks.length - done;
+  document.getElementById('tasks-done').textContent = done;
+  document.getElementById('tasks-left').textContent = left;
+  document.getElementById('days-done').textContent = done;
+  document.getElementById('prog-pct').textContent = calcPct()+'%';
+}
+
+// ── PHOTOS ──
+let pendingPhotoData = null;
+
+function openPhotoModal(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingPhotoData = ev.target.result;
+    document.getElementById('modal-preview').src = pendingPhotoData;
+    document.getElementById('modal-preview').style.display='block';
+    document.getElementById('modal-caption').value='';
+    document.getElementById('modal-type').value='progress';
+    document.getElementById('photo-modal').classList.add('open');
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+function closeModal(){
+  document.getElementById('photo-modal').classList.remove('open');
+  pendingPhotoData=null;
+}
+
+function savePhoto(){
+  if(!pendingPhotoData) return;
+  const photos = getPhotos();
+  photos.unshift({
+    id: Date.now(),
+    data: pendingPhotoData,
+    caption: document.getElementById('modal-caption').value || 'No caption',
+    type: document.getElementById('modal-type').value,
+    date: new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+  });
+  setPhotos(photos);
+  closeModal();
+  renderPhotos();
+  toast('Photo added to archive');
+}
+
+function deletePhoto(id){
+  let photos = getPhotos();
+  photos = photos.filter(p=>p.id!==id);
+  setPhotos(photos);
+  renderPhotos();
+  toast('Removed from archive');
+}
+
+function renderPhotos(){
+  const photos = getPhotos();
+  const grid = document.getElementById('photo-grid');
+  const empty = document.getElementById('empty-photos');
+  const count = document.getElementById('photo-count');
+  count.textContent = `${photos.length} moment${photos.length!==1?'s':''} captured`;
+  if(!photos.length){
+    grid.innerHTML = `<div class="empty-photos" id="empty-photos" style="grid-column:1/-1"><p>No moments captured yet.</p><span>Upload your first milestone photo above</span></div>`;
+    return;
+  }
+  grid.innerHTML = photos.map(p=>`
+    <div class="photo-card" onclick="openLightbox('${p.id}')">
+      <img src="${p.data}" alt="${p.caption}" loading="lazy">
+      <div class="photo-type ${p.type}">${p.type}</div>
+      <button class="photo-delete" onclick="event.stopPropagation();deletePhoto(${p.id})">×</button>
+      <div class="photo-overlay">
+        <div class="photo-caption">${p.caption}</div>
+        <div class="photo-meta">${p.date}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openLightbox(id){
+  const photos = getPhotos();
+  const p = photos.find(x=>x.id==id);
+  if(!p) return;
+  document.getElementById('lightbox-img').src = p.data;
+  document.getElementById('lightbox-caption').textContent = p.caption;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+
+// ── VERDICT ──
+function initVerdict(){
+  document.getElementById('verdict-date').textContent =
+    '25th May to 30th June  ·  ' + new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const v = getVerdict();
+  if(v) {
+    setVerdict(v,true);
+  } else {
+    document.getElementById('btn-undo').style.display='none';
+  }
+  document.getElementById('verdict-notes').value = getVerdictNotes();
+}
+
+function setVerdict(type, silent){
+  setVerdictStore(type);
+  document.getElementById('btn-success').className='verdict-btn'+(type==='success'?' active-s':'');
+  document.getElementById('btn-failure').className='verdict-btn'+(type==='failure'?' active-f':'');
+  document.getElementById('btn-undo').style.display='block';
+
+  const display = document.getElementById('verdict-display');
+  if(type==='success'){
+    display.innerHTML = `
+      <p class="verdict-phrase success-phrase" id="vp">kar liya <em>laundeeee</em></p>
+      <p class="verdict-sub" id="vs">You built something real. Every late night, every broken prototype, every doubt — it was all worth it.</p>`;
+  } else {
+    display.innerHTML = `
+      <p class="verdict-phrase" id="vp">someday <em>we will</em></p>
+      <p class="verdict-sub" id="vs">This isn't the end of the story. It's just the end of Chapter 1. The engineer who tried this hard doesn't stop here.</p>`;
+  }
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const vp = document.getElementById('vp');
+      const vs = document.getElementById('vs');
+      if(vp) vp.classList.add('shown');
+      if(vs) vs.classList.add('shown');
+    });
+  });
+  if(!silent) toast(type==='success' ? 'Verdict saved ✓' : 'Verdict saved');
+}
+
+function undoVerdict(){
+  setVerdictStore('');
+  document.getElementById('btn-success').className='verdict-btn';
+  document.getElementById('btn-failure').className='verdict-btn';
+  document.getElementById('btn-undo').style.display='none';
+  
+  const display = document.getElementById('verdict-display');
+  display.innerHTML = `<p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;">Awaiting verdict</p>`;
+  toast('Verdict reset');
+}
+
+function saveVerdictNotes(){
+  setVerdictNotes(document.getElementById('verdict-notes').value);
+  toast('Reflection saved');
+}
+
+// ── TOAST ──
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  renderChecklist();
+  // page init animation
+  document.querySelectorAll('.page').forEach(p=>{
+    if(!p.classList.contains('active')) p.style.display='none';
+  });
+});
+
+// close modal on overlay click
+document.getElementById('photo-modal').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+</script>
+</body>
+</html>
